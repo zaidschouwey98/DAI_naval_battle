@@ -20,6 +20,7 @@ public class Server implements Callable<Integer> {
 
     @Override
     public Integer call() {
+        startServer(port);
         throw new UnsupportedOperationException(
                 "Please remove this exception and implement this method.");
     }
@@ -34,18 +35,19 @@ public class Server implements Callable<Integer> {
 
                 try {
                     // Attente du premier joueur
-                    player1Socket = serverSocket.accept();
+                    player1Socket = serverSocket.accept(); // bloquant
                     System.out.println("[Server] Player 1 connected from "
                             + player1Socket.getInetAddress().getHostAddress() + ":"
                             + player1Socket.getPort() + END_OF_LINE);
                     BufferedWriter out1 = new BufferedWriter(new OutputStreamWriter(player1Socket.getOutputStream(),
                             StandardCharsets.UTF_8));
 
+                    // Message au 1er joueur connecté
                     out1.write("Waiting for a second player to join..." + END_OF_LINE);
                     out1.flush();
 
                     // Attente du second joueur
-                    player2Socket = serverSocket.accept();
+                    player2Socket = serverSocket.accept(); //bloquant
                     System.out.println("[Server] Player 2 connected from "
                             + player2Socket.getInetAddress().getHostAddress() + ":"
                             + player2Socket.getPort() + END_OF_LINE);
