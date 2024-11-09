@@ -12,47 +12,55 @@ The "Battleship" protocol is a text-based communication protocol used for playin
 
 Every message must be encoded in UTF-8 and delimited by a newline character (\n). The messages are treated as text messages.
 
+### Game Setup and Matchmaking
 The client A that wants to start a Battleship game sends a message to the server.
 
-The server checks if the client A has already started a game.
+The server checks if client A is already engaged in a game:
+- If yes, the server sends an error message to client A.
+- If no, the server accepts the request, and broadcasts a match-making request over UDP to find an opponent for the client A.
 
-- If so, the server sends an error message to the client.
-- If not, the server accepts the request, and broadcasts a message to find an opponent for the client A.
-
-Receiving this message through UDP, the client B replies to the server that he wants to play Battleship with the client A.
-
+Upon receiving the match-making broadcast, Client B responds to the server, indicating they want to join the game with client A.
 The server checks if the client B has already started a game.
 
  - If so, the server sends an error message to the client. 
  - If not, the server accepts the request, and initiates a TCP connection with both client A and client B.
 
-Once the two connections are established, the server generates two Battleship 1D grids with warships associated with each of the clients and asks client A to send a position, represented by a number between 0 and 9.
+Once the two connections are established, the server generates two warship-filled 1D grids associated with each of the clients.
 
+The server then prompts Client A to send their first attack position, represented by a number between 0 and 9.
+
+### Gameplay
 One turn proceeds as follows:
 
+#### Client's attack
 The client A sends the server a number.
 
 The server checks if this number has already been sent by client A. 
 - If so, the server asks client A to send a different position.
 - If not, the server updates the grid of client B with client A's chosen position.
 
+#### Server response
 The server checks if the chosen position is covered by a warship.
 
 The server replies accordingly : miss, hit, destroyed.
 
-The server then asks client B to send a position.
+#### Switching turns
+The server then prompts Client B to send an attack position.
 
-According to the client B's chosen position, the server updates the grid of client A (or not) and answers as described above.
+Client B's turn proceeds similarly, with the server updating Client A's grid as appropriate and providing a result.
 
-This process continues until one of the two clients enters a position that leads to the destruction of every warship in the other client's associated grid.
+### Ending the game
+The game continues in turn-by-turn format until one of the clients targets and destroys every warship on the opponent's grid.
 
-In that case, the server replies to the winning client with a victory message and asks him if he wants to rematch.
+#### Victory and defeat
+When a client destroys all warships on the opponent’s grid, the server sends a victory message to the winning client and a defeat message to the losing client.
 
-- If the winning client accepts to rematch, the server sends the losing client a defeat message and asks him if he wants to rematch or not.
-  - If the losing client accepts to rematch, the server regenerates two Battleship 1D-grids and asks him to send a position, starting the game process again.
-  - If not, the server closes the connection with the losing client, informs the winning client to his opponent refuses to rematch, then closes the connection with him as well.
-- If not, the server closes the connection with the winning client, sends the losing client a defeat message and closes the connection with him as well.
-
+#### Rematch offer
+The server asks the winning client if they would like to play a rematch:
+- If the winning client accepts, the server sends a rematch offer to the losing client. 
+  - If the losing client accepts, the server generates new grids and starts a new game.
+  - If the losing client declines, the server closes the connection with both clients, informing the winning client that the rematch was declined.
+- If the winning client declines, the server closes the connection with both clients.
 ## Section 3 - Messages
 
 ### Starting a Game
@@ -68,8 +76,6 @@ START
 #### Response
 
 - `WAITING`: the server is searching for an opponent.
-- `ERROR <code>`: an error occured. The error codes are:
-  - 1 : a game is already in session for this client.
 
 ### Matchmaking Broadcast
 
@@ -87,7 +93,7 @@ JOIN <client_A_id>
 ```
 #### Server Response
 - `CONNECTED <client_A_id> <client_B_id>`: game connection is successfully established between client A and client B.
-- `ERROR <code>`: an error occured. The error codes are:
+- `ERROR <code>`: an error occurred. The error codes are:
   - 1 : a game is already in session for this client.
 
 ### Game Setup
@@ -108,11 +114,14 @@ ATTACK <position>
 
 #### Server response
 
-- MISS: client’s position did not hit a warship. 
-- HIT: client’s position hit an opponent’s warship.
-- DESTROYED: client’s position destroyed an opponent’s warship.
-- ERROR 1: position has already been guessed by the client.
-- ERROR 2: position is out of bounds (not between 0 and 9).
+- `MISS`: client’s position did not hit a warship. 
+- `HIT`: client’s position hit an opponent’s warship.
+- `DESTROYED`: client’s position destroyed an opponent’s warship.
+- `ERROR <code> TRY_AGAIN`. The error codes are as follows:
+  - 1: position has already been guessed by the client.
+  - 2: position is out of bounds (not between 0 and 9)
+
+In case of an error, the server asks the client to try again, until a valid input is given.
 
 ### Turn Notification 
 The server informs each client when it’s their turn to play.
@@ -170,3 +179,11 @@ When the rematch is declined, the server informs each client and closes the conn
 - `DISCONNECT`: the connection is closed by the server.
 
 ## Section 4 - Examples
+
+#### Functional example
+![functional](./images/Functional_example.png)
+
+#### Client A enters twice the same position
+![error](./images/ClientA%20enters%20twice%20same%20pos.png)
+
+#### 
