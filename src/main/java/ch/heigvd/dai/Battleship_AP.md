@@ -15,15 +15,11 @@ Every message must be encoded in UTF-8 and delimited by a newline character (\n)
 ### Game Setup and Matchmaking
 The client A that wants to start a Battleship game sends a message to the server.
 
-The server checks if client A is already engaged in a game:
-- If yes, the server sends an error message to client A.
-- If no, the server accepts the request, and broadcasts a match-making request over UDP to find an opponent for the client A.
+The server accepts the request, and broadcasts a match-making request over UDP to find an opponent for the client A.
 
 Upon receiving the match-making broadcast, Client B responds to the server, indicating they want to join the game with client A.
-The server checks if the client B has already started a game.
 
- - If so, the server sends an error message to the client. 
- - If not, the server accepts the request, and initiates a TCP connection with both client A and client B.
+The server accepts the request, and initiates a TCP connection with both client A and client B.
 
 Once the two connections are established, the server generates two warship-filled 1D grids associated with each of the clients.
 
@@ -33,6 +29,8 @@ The server then prompts Client A to send their first attack position, represente
 One turn proceeds as follows:
 
 #### Client's attack
+The server prompts Client A to send an attack position.
+
 The client A sends the server a number.
 
 The server checks if this number has already been sent by client A. 
@@ -56,11 +54,10 @@ The game continues in turn-by-turn format until one of the clients targets and d
 When a client destroys all warships on the opponent’s grid, the server sends a victory message to the winning client and a defeat message to the losing client.
 
 #### Rematch offer
-The server asks the winning client if they would like to play a rematch:
-- If the winning client accepts, the server sends a rematch offer to the losing client. 
-  - If the losing client accepts, the server generates new grids and starts a new game.
-  - If the losing client declines, the server closes the connection with both clients, informing the winning client that the rematch was declined.
-- If the winning client declines, the server closes the connection with both clients.
+The server asks both clients if they would like to play a rematch:
+- If both of the clients accepts to rematch, the server generates new grids and starts a new game. 
+- If at least one of the clients declines, the server closes the connection with both clients.
+
 ## Section 3 - Messages
 
 ### Starting a Game
@@ -93,8 +90,6 @@ JOIN <client_A_id>
 ```
 #### Server Response
 - `CONNECTED <client_A_id> <client_B_id>`: game connection is successfully established between client A and client B.
-- `ERROR <code>`: an error occurred. The error codes are:
-  - 1 : a game is already in session for this client.
 
 ### Game Setup
 Once both connections are established, the server sets up 1D grids and sends confirmation messages to both clients.
@@ -103,7 +98,13 @@ Once both connections are established, the server sets up 1D grids and sends con
 ```text
 GAME_READY
 ```
+### Turn Notification
+The server informs each client when it’s their turn to play.
 
+#### Message
+```text
+YOUR_TURN
+```
 ### Position Guess (One turn)
 The client sends a position guess, represented by a number between 0 and 9, to the server.
 
@@ -124,7 +125,7 @@ ATTACK <position>
 In case of an error, the server asks the client to try again, until a valid input is given.
 
 ### Turn Notification 
-The server informs each client when it’s their turn to play.
+The server informs the other client when it’s their turn to play.
 
 #### Message
 ```text
@@ -144,33 +145,22 @@ DEFEAT
 ```
 
 ### Rematch offer
-After the game ends, the server asks the winning client if they would like a rematch.
+After the game ends, the server asks both clients if they would like a rematch.
 
-#### Server message to winning client
+#### Server message to clients
 ```text
 REMATCH_OFFER
 ```
-#### Winning client response
+#### Client response
 - `REMATCH_ACCEPT`: the client accepts the rematch offer.
 - `REMATCH_DECLINE`: the client declines the rematch offer.
-
-### Rematch confirmation with losing client
-If the winning client accepts the rematch, the server asks the losing client if they want a rematch.
-
-#### Server message to losing client
-```text
-REMATCH_OFFER
-```
-#### Losing client response
-- `REMATCH_ACCEPT`: the client accepts the rematch.
-- `REMATCH_DECLINE`: the client declines the rematch.
 
 ### Rematch outcome
 The server informs each client about the outcome of the rematch offer.
 
 #### Messages
-- `REMATCH_START`: a new game session will begin.
-- `REMATCH_DECLINED`: the opponent declined the rematch, ending the session.
+- `REMATCH_START`: both clients accept to rematch. A new game session begins.
+- `REMATCH_DECLINED`: as least one of the client declines the rematch offer. The session ends.
 
 ### Connection Close
 When the rematch is declined, the server informs each client and closes the connection.
@@ -180,10 +170,10 @@ When the rematch is declined, the server informs each client and closes the conn
 
 ## Section 4 - Examples
 
-#### Functional example
+#### Example with no error printed by the server
 ![functional](./images/Functional_example.png)
 
 #### Client A enters twice the same position
-![error](./images/ClientA%20enters%20twice%20same%20pos.png)
+![error](./images/Error_same_pos.png)
 
 #### 

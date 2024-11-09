@@ -1,12 +1,16 @@
+bottomparticipants 
 ClientA->Server: Establish connection
 Server->ClientA: Connection established
 
 ==Starting the game==
 ClientA->Server: START
+note over Server: Server gives client A the id 1234
 Server->ClientA: Waiting
 ==Match making broadcast==
+note over Server, ClientB: Server uses UDP to broadcast to all clients
 Server->ClientB: Find_opponent 1234
 ClientB->Server: JOIN 1234
+note over Server: Server gives client B the id 5678
 parallel 
 Server->ClientA: Connected 1234 5678
 Server->ClientB: Connected 1234 5678
@@ -29,22 +33,24 @@ Server->ClientA: YOUR_TURN
 ClientA->Server: ATTACK 1
 Server->ClientA: DESTROYED
 
-note over Server: [Client B proceeds to attack 6, 7, then 8 and Client A proceeds to attack 7 then 8]
+note over Server: Client B proceeds to attack 6, 7, then 8 and Client A proceeds to attack 7 then 8
 
 Server->ClientA: YOUR_TURN
 ClientA->Server: ATTACK 6
 Server->ClientA: DESTROYED
-note over Server: [Every warship of the grid associated with client B is destroyed, so client A wins.]
+note over Server: Every warship of the grid associated with client B is destroyed, so client A wins.
 ==Victory and defeat==
 parallel
 Server->ClientA: VICTORY
 Server->ClientB: DEFEAT
 parallel off
 ==Rematch offer==
+parallel
 Server->ClientA: REMATCH_OFFER
-ClientA->Server: REMATCH_ACCEPT
 Server->ClientB: REMATCH_OFFER
+parallel off
 ClientB->Server: REMATCH_ACCEPT
+ClientA->Server: REMATCH_ACCEPT
 parallel
 Server->ClientA: REMATCH_START
 Server->ClientB: REMATCH_START
@@ -57,15 +63,16 @@ Server->ClientB: Game_ready
 parallel off
 ==Position guess==
 Server->ClientA: YOUR_TURN
-note over Server: [Client B proceeds to win the game]
+note over Server: Client B proceeds to win the game
 parallel
 Server->ClientB: VICTORY
 Server->ClientA: DEFEAT
 parallel off
 ==Rematch offer==
+parallel
 Server->ClientA: REMATCH_OFFER
-ClientA->Server: REMATCH_ACCEPT
 Server->ClientB: REMATCH_OFFER
+parallel off
 ClientB->Server: REMATCH_DECLINE
 parallel
 Server->ClientA: REMATCH_DECLINED

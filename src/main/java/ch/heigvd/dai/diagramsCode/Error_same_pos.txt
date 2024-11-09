@@ -1,12 +1,18 @@
+bottomparticipants 
 ClientA->Server: Establish connection
 Server->ClientA: Connection established
 
 ==Starting the game==
 ClientA->Server: START
+note over Server: Server gives client A the id 1234 
 Server->ClientA: Waiting
+
 ==Match making broadcast==
+note over Server, ClientB: Server uses UDP to broadcast to all clients
+
 Server->ClientB: Find_opponent 1234
 ClientB->Server: JOIN 1234
+note over Server: Server gives client A the id 5678
 parallel 
 Server->ClientA: Connected 1234 5678
 Server->ClientB: Connected 1234 5678
