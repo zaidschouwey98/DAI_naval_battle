@@ -73,6 +73,7 @@ START
 #### Response
 
 - `WAITING`: the server is searching for an opponent.
+- `ERROR 1`: client A has already started a game.
 
 ### Matchmaking Broadcast
 
@@ -90,7 +91,7 @@ JOIN <client_A_id>
 ```
 #### Server Response
 - `CONNECTED <client_A_id> <client_B_id>`: game connection is successfully established between client A and client B.
-
+- `ERROR 1`: client B has already started a game.
 ### Game Setup
 Once both connections are established, the server sets up 1D grids and sends confirmation messages to both clients.
 
@@ -170,10 +171,11 @@ When the rematch is declined, the server informs each client and closes the conn
 
 ## Section 4 - Examples
 
-#### Example with no error printed by the server
-![functional](./images/Functional_example.png)
+#### Functional example (no error printed by the server)
+![functional](./images/Functional.png)
 
 #### Client A enters twice the same position
-![error](./images/Error_same_pos.png)
+![error](./images/Same_pos.png)
 
-#### 
+#### Client B tries to join with an active game session
+![error2](./images/B_playing.png)
