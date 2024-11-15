@@ -25,16 +25,46 @@ public class Client implements Callable<Integer> {
     public Integer call() {
         try (Socket socket = new Socket(host, port);
              BufferedInputStream bin = new BufferedInputStream(socket.getInputStream());
-             BufferedOutputStream bout = new BufferedOutputStream(socket.getOutputStream())) {
+             BufferedOutputStream bout = new BufferedOutputStream(socket.getOutputStream());
+             BufferedReader reader = new BufferedReader(new InputStreamReader(System.in))) {
             System.out.println("[Client] Connected to " + host + ":" + port);
-            while(socket.isConnected()) {
-                //Garder le buffer d'entrée et sortie actif
-                socket.close();
+
+            byte[] buffer = new byte[1024];
+            while (!socket.isClosed()) {
+                // Lire les messages du serveur
+                if (bin.available() > 0) {
+                    int bytesRead = bin.read(buffer);
+                    String serverMessage = new String(buffer, 0, bytesRead);
+                    System.out.println("[Server] " + serverMessage);
+
+                    // Vérifier si le serveur envoie un message de fin de jeu
+                    if ("END".equals(serverMessage.trim())) {
+                        System.out.println("[Client] Game over.");
+                        socket.close();
+                        break;
+                    }
+                }
+
+                // Envoyer des messages au serveur
+                if (reader.ready()) {
+                    System.out.print("Your move: ");
+                    String clientMessage = reader.readLine();
+                    bout.write(clientMessage.getBytes());
+                    bout.flush();
+
+                    // Quitter si le client envoie une commande de sortie
+                    if ("quit".equalsIgnoreCase(clientMessage.trim())) {
+                        System.out.println("[Client] Disconnecting...");
+                        socket.close();
+                        break;
+                    }
+                }
+
             }
-             } catch (IOException e) {
+        } catch (IOException e) {
             System.out.println("[Client] Could not connect to " + host + ":" + port);
+            return -1;
         }
-        throw new UnsupportedOperationException(
-                "Please remove this exception and implement this method.");
+        return 0;
     }
 }

@@ -21,20 +21,18 @@ public class Server implements Callable<Integer> {
     @Override
     public Integer call() {
         startServer(port);
-        throw new UnsupportedOperationException(
-                "Please remove this exception and implement this method.");
+        return 0;
     }
 
     static void startServer(int port) {
         try (ServerSocket serverSocket = new ServerSocket(port)) {
             System.out.println("[Server] Listening on port " + port);
 
-            while (true) {
+            while (!serverSocket.isClosed()) {
                 Socket player1Socket = null;
                 Socket player2Socket = null;
 
-                try {
-                    // Attente du premier joueur
+                try { // Attente du premier joueur
                     player1Socket = serverSocket.accept(); // bloquant
                     System.out.println("[Server] Player 1 connected from "
                             + player1Socket.getInetAddress().getHostAddress() + ":"
@@ -66,26 +64,18 @@ public class Server implements Callable<Integer> {
 
 
                     // Fermeture des connexions des joueurs après la fin du jeu
+                    out1.write("END");
+                    out1.flush();
+                    out2.write("END");
+                    out2.flush();
+
                     player1Socket.close();
                     player2Socket.close();
-                    System.out.println("[Server] Both players are now disconnected. End of the game.");
 
+                    System.out.println("[Server] Both players are now disconnected. End of the game.");
+                    serverSocket.close();
                 } catch (IOException e) {
                     System.out.println("[Server] IO exception: " + e);
-                    if (player1Socket != null && !player1Socket.isClosed()) {
-                        try {
-                            player1Socket.close();
-                        } catch (IOException ex) {
-                            ex.printStackTrace();
-                        }
-                    }
-                    if (player2Socket != null && !player2Socket.isClosed()) {
-                        try {
-                            player2Socket.close();
-                        } catch (IOException ex) {
-                            ex.printStackTrace();
-                        }
-                    }
                 }
             }
         } catch (IOException e) {
