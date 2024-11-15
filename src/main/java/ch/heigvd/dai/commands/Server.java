@@ -62,6 +62,11 @@ public class Server implements Callable<Integer> {
                     System.out.println("[Server] Both players are now connected. Ready to start the game.");
 
 
+                    try {
+                        Thread.sleep(2000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
 
                     // Fermeture des connexions des joueurs après la fin du jeu
                     out1.write("END");
