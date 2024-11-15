@@ -68,7 +68,6 @@ public class Battleship {
         gridString.append("]");
         return gridString.toString();
     }
-
     private boolean checkHit(int position) {
         if (target[position] != '_') {
             char ship = target[position];
