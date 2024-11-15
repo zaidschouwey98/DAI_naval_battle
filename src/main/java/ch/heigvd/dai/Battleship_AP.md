@@ -89,6 +89,8 @@ Client B responds to the server’s broadcast message to join a game with client
 ```text
 JOIN <client_A_id>
 ```
+
+
 #### Server Response
 - `CONNECTED <client_A_id> <client_B_id>`: game connection is successfully established between client A and client B.
 - `ERROR 1`: client B has already started a game.
