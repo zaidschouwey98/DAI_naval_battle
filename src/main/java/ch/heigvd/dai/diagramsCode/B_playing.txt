@@ -1,0 +1,16 @@
+bottomparticipants 
+ClientA->Server: Establish connection
+Server->ClientA: Connection established
+
+==Starting the game==
+note over ClientA, ClientB: ...
+
+==Match making broadcast==
+Server->Server: FIND_OPPONENT <client_A_id>
+
+note over Server, ClientB: Broadcast message sent to all clients
+
+ClientB->Server: JOIN <client_A_id>
+note over Server: Server checks if Client B has an active game session
+note over Server: Client B has already started a game
+Server->ClientB: ERROR 1

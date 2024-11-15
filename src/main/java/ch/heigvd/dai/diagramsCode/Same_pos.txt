@@ -1,0 +1,25 @@
+bottomparticipants 
+ClientA->Server: Establish connection
+Server->ClientA: Connection established
+
+==Starting the game==
+note over ClientA, ClientB: ...
+==Match making broadcast==
+note over ClientA, ClientB: ...
+==Game setup==
+note over ClientA, ClientB: ...
+
+==Position guess==
+Server->ClientA: YOUR_TURN
+ClientA->Server: ATTACK 0
+Server->ClientA: HIT
+Server->ClientB: YOUR_TURN
+ClientB->Server: ATTACK 3
+Server->ClientB: MISS
+Server->ClientA: YOUR_TURN
+ClientA->Server: ATTACK 0
+Server->ClientA: ERROR 1
+ClientA->Server: ATTACK 1
+Server->ClientA: DESTROYED
+==Continues normally until one player wins==
+
