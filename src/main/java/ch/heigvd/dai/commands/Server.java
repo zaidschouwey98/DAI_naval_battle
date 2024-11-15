@@ -1,6 +1,8 @@
 package ch.heigvd.dai.commands;
 
-import java.util.concurrent.Callable;
+import java.util.concurrent.*;
+
+import ch.heigvd.dai.NavalBattle;
 import picocli.CommandLine;
 import java.io.*;
 import java.net.ServerSocket;
@@ -18,6 +20,8 @@ public class Server implements Callable<Integer> {
             defaultValue = "6433")
     protected static int port;
 
+    private static final int MAX_THREADS = 10; // Limite des threads
+
     @Override
     public Integer call() {
         startServer(port);
@@ -25,66 +29,35 @@ public class Server implements Callable<Integer> {
     }
 
     static void startServer(int port) {
+        ExecutorService executorService = Executors.newFixedThreadPool(MAX_THREADS);
+
         try (ServerSocket serverSocket = new ServerSocket(port)) {
             System.out.println("[Server] Listening on port " + port);
 
             while (!serverSocket.isClosed()) {
-                Socket player1Socket = null;
-                Socket player2Socket = null;
-
-                try { // Attente du premier joueur
-                    player1Socket = serverSocket.accept(); // bloquant
+                try {
+                    // Accepter la connexion du premier joueur
+                    Socket player1Socket = serverSocket.accept();
                     System.out.println("[Server] Player 1 connected from "
                             + player1Socket.getInetAddress().getHostAddress() + ":"
                             + player1Socket.getPort() + END_OF_LINE);
-                    BufferedWriter out1 = new BufferedWriter(new OutputStreamWriter(player1Socket.getOutputStream(),
-                            StandardCharsets.UTF_8));
 
-                    // Message au 1er joueur connecté
-                    out1.write("Waiting for a second player to join..." + END_OF_LINE);
-                    out1.flush();
-
-                    // Attente du second joueur
-                    player2Socket = serverSocket.accept(); //bloquant
+                    // Accepter la connexion du second joueur
+                    Socket player2Socket = serverSocket.accept();
                     System.out.println("[Server] Player 2 connected from "
                             + player2Socket.getInetAddress().getHostAddress() + ":"
                             + player2Socket.getPort() + END_OF_LINE);
-                    BufferedWriter out2 = new BufferedWriter(new OutputStreamWriter(player2Socket.getOutputStream(),
-                            StandardCharsets.UTF_8));
 
-                    // Confirmation de connexion pour les deux joueurs
-                    out1.write("Both players are connected. The game can start!" + END_OF_LINE);
-                    out1.flush();
-                    out2.write("Both players are connected. The game can start!" + END_OF_LINE);
-                    out2.flush();
-
-                    // Ici, on pourrait lancer le jeu, mais pour l'instant on s'arrête ici
-                    System.out.println("[Server] Both players are now connected. Ready to start the game.");
-
-
-                    try {
-                        Thread.sleep(2000);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-
-                    // Fermeture des connexions des joueurs après la fin du jeu
-                    out1.write("END");
-                    out1.flush();
-                    out2.write("END");
-                    out2.flush();
-
-                    player1Socket.close();
-                    player2Socket.close();
-
-                    System.out.println("[Server] Both players are now disconnected. End of the game.");
-                    serverSocket.close();
+                    // Confirmer que les deux joueurs sont connectés
+                    executorService.submit(new NavalBattle(player1Socket, player2Socket));
                 } catch (IOException e) {
                     System.out.println("[Server] IO exception: " + e);
                 }
             }
         } catch (IOException e) {
-            System.out.println("[Server] IO exception: " + e);
+            System.out.println("[Server] Could not start the server: " + e);
+        } finally {
+            executorService.shutdown();
         }
     }
 }

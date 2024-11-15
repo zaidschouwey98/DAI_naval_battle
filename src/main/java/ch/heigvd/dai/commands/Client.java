@@ -9,7 +9,7 @@ import java.net.*;
 public class Client implements Callable<Integer> {
 
     @CommandLine.Option(
-            names = {"-H", "--host"},
+            names = {"-h", "--host"},
             description = "IP adress of the host to connect to.",
             defaultValue = "127.0.0.1",
             required = true)
