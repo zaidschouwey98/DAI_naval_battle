@@ -20,7 +20,7 @@ public class Server implements Callable<Integer> {
             defaultValue = "6433")
     protected static int port;
 
-    private static final int MAX_THREADS = 10; // Limite des threads
+    private static final int MAX_THREADS = 2; // Limite des threads
 
     @Override
     public Integer call() {
