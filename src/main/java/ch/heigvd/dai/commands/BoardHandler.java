@@ -3,61 +3,89 @@ package ch.heigvd.dai.commands;
 import java.util.Random;
 
 public class BoardHandler {
-    private Board[] board;
-    private Board[] opponentBoard;
 
+    final int SIZE = 10;
+    boolean TURN = false;
+    char[] grid = new char[SIZE];
+    char[] target = new char[SIZE];
+
+    private final Random random = new Random();
     public BoardHandler() {
-        this.board = new Board[10];
-        this.opponentBoard = new Board[10];
-        Random rand = new Random();
-        for (int i = 0; i < 10; i++) {
-            this.board[i] = rand.nextInt(2) == 0 ? Board.O : Board.B;
-        }
-        for (int i = 0; i < 10; i++) {
-            this.opponentBoard[i] = Board.V;
-        }
+        initialiseGrid(this.grid);
+        initialiseGrid(this.target);
+        placeShip(2, 'A');
+        placeShip(3, 'B');
     }
-    public BoardHandler(Board[] board) {
-        this.board = board;
+    private void placeShip(int size, char marker) {
+        boolean placed = false;
+
+        while (!placed) {
+            int start = random.nextInt(grid.length - size + 1);
+
+            boolean overlap = false;
+            for (int i = start; i < start + size; i++) {
+                if (grid[i] != '_') {
+                    overlap = true;
+                    break;
+                }
+            }
+
+            if (!overlap) {
+                for (int i = start; i < start + size; i++) {
+                    grid[i] = marker;
+                }
+                placed = true;
+            }
+        }
     }
 
-    public String toString(){
-        String str = "";
-        str +='[';
-        for(Board c : board){
-            str += c + ",";
+    private void initialiseGrid(char[] grid) {
+        for (int i = 0; i < grid.length; i++) {
+            grid[i] = '_';
         }
-        str+=']';
-        return str;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder gridString = new StringBuilder("[");
+        for (int i = 0; i < SIZE; i++) {
+            gridString.append(grid[i]);
+            if (i < SIZE - 1) {
+                gridString.append(",");
+            }
+        }
+        gridString.append("]");
+        return gridString.toString();
     }
 
     public FireResult receiveFire(int index){
-        if(index > board.length){
+        if(index > grid.length){
             throw new IndexOutOfBoundsException();
         }
 
 
-        FireResult res = switch (board[index]) {
-            case B -> FireResult.H;
-            case O -> FireResult.M;
+        FireResult res = switch (grid[index]) {
+            case 'B' -> FireResult.H;
+            case 'A' -> FireResult.H;
+            case '_' -> FireResult.M;
             default -> FireResult.UNKOWN;
         };
-        if(this.board[index] == Board.B){
-            this.board[index] = Board.X;
+        if(this.grid[index] == 'B'){
+            this.grid[index] = 'X';
         }
-        if(this.board[index] == Board.O){
-            this.board[index] = Board.R;
+        if(this.grid[index] == '_'){
+            this.grid[index] = '_';
         }
         return res;
     }
 
-    public void setOpponentBoardCase(int index, FireResult result){
-        if(index > board.length){
+    public void setOpponentBoardCell(int index, FireResult fireResult){
+        if(index > grid.length){
             throw new IndexOutOfBoundsException();
         }
-        switch (result){
-            case H -> this.opponentBoard[index] = Board.O;
-            case M -> this.opponentBoard[index] = Board.X;
+        switch (fireResult){
+            case H -> this.target[index] = 'X';
+            case M -> this.target[index] = 'O';
         }
 
 
@@ -65,7 +93,7 @@ public class BoardHandler {
     public String getOpponentBoardToString() {
         String str = "";
         str +='[';
-        for(Board c : opponentBoard){
+        for(char c : target){
             str += c + ",";
         }
         str+=']';

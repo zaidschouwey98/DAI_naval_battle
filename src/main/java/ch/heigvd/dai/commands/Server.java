@@ -87,7 +87,7 @@ class ClientHandler implements Runnable {
 
             System.out.println("Sending board...");
             // SEND BOARD
-            String boardtoS = "BOARD=" + this.game.getBoard(playerId).toString() +"\n";
+            String boardtoS = "PLAYERBOARD=" + this.game.getBoard(playerId).toString() +"\n";
             out.write(boardtoS);
             out.flush();
 
@@ -103,35 +103,45 @@ class ClientHandler implements Runnable {
             out.write("GAME_READY\n");
             out.flush();
 
+            int currentPlayer = 0;
 
             while (!game.gameOver()) {
                 synchronized (game.getLock()) {
                     Thread.sleep(1000);
                     if (game.getPlayerTurn() == playerId) {
+
+                        // just switched turn
                         out.write("YOUR_TURN\n");
                         out.flush();
+
+                        currentPlayer = playerId;
+
                         String clientMessage = in.readLine();
                         if(clientMessage.contains("ATTACK")) {
                             System.out.println("Attacking...");
                             int targetIndex = Integer.parseInt(clientMessage.substring(7));
                             FireResult res = game.shoot(targetIndex);
-                            game.getBoard(playerId).setOpponentBoardCase(targetIndex,res);
+                            game.getBoard(playerId).setOpponentBoardCell(targetIndex,res);
 
                             if(res == FireResult.H){
-                                out.write("HIT\n");
+                                out.write("ATTACKRESULT=HIT\n");
                                 out.flush();
-                                System.out.println("HIT");
+                                System.out.println("ATTACKRESULT=HIT");
                             } else if(res == FireResult.M){
-                                out.write("MISS\n");
+                                out.write("ATTACKRESULT=MISS\n");
                                 out.flush();
-                                System.out.println("MISS");
+                                System.out.println("ATTACKRESULT=MISS");
                             } else {
-                                out.write("UNKNOWN\n");
+                                out.write("ATTACKRESULT=UNKNOWN\n");
                                 out.flush();
                             }
-                            out.write(game.getBoard(playerId).getOpponentBoardToString() + '\n');
+                            out.write("OPPONENTBOARD=" + game.getBoard(playerId).getOpponentBoardToString() + '\n');
                             out.flush();
-                        } else {
+                        } else if(clientMessage.contains("GETBOARD")) {
+                            out.write("PLAYERBOARD=" + this.game.getBoard(playerId).toString() +"\n");
+                            out.flush();
+                        }
+                        else {
                             out.write("UNVALID\n");
                             out.flush();
                         }

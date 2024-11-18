@@ -41,25 +41,27 @@ public class Client implements Callable<Integer> {
 
             while (!socket.isClosed()) {
                 String input = in.readLine();
-                if(input.contains("BOARD=")){
+                if(input.contains("PLAYERBOARD=")){
                     String board = input.substring(6);
-                    System.out.println(board);
+                    System.out.println("Your board : " + board);
 
 
                 } else if(input.contains("YOUR_TURN")){
                     System.out.println("It's your Turn ! ");
-
-                    Scanner myObj = new Scanner(System.in);  // Create a Scanner object
-                    System.out.println("Enter your target [0 - 10] : ");
+                    Scanner myObj = new Scanner(System.in);
+                    System.out.println("Enter your target [1 - 10] : ");
                     String target = myObj.nextLine();  // Read user input
-
-                    out.write("ATTACK "+target+ "\n");
+                    int val = Integer.parseInt(target);
+                    out.write("ATTACK "+(val - 1)+ "\n");
                     out.flush();
-                    String res = in.readLine();
+
+                } else if(input.contains("ATTACKRESULT=")){
+                    String res = input.substring(13);
                     System.out.println("Shot "+ res);
-                    String opponentBoard = in.readLine();
-                    System.out.println("Board : "+ opponentBoard);
-                } else if(input.equals("GAME_READY")){
+                }else if(input.contains("OPPONENTBOARD=")){
+                    String opponentBoard = input.substring(14);
+                    System.out.println("Opponent Board : "+ opponentBoard);
+                }else if(input.contains("GAME_READY")){
                     System.out.println("Game starting !");
                 }
                 else {
