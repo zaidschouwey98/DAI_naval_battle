@@ -1,10 +1,11 @@
 package ch.heigvd.dai.commands;
 
+import java.util.Arrays;
 import java.util.Random;
 
 public class BoardHandler {
 
-    final int SIZE = 10;
+    final int SIZE = 16;
     boolean TURN = false;
     char[] grid = new char[SIZE];
     char[] target = new char[SIZE];
@@ -13,8 +14,8 @@ public class BoardHandler {
     public BoardHandler() {
         initialiseGrid(this.grid);
         initialiseGrid(this.target);
-        placeShip(2, 'A');
-        placeShip(3, 'B');
+        placeShip(1, 'A');
+        placeShip(1, 'B');
     }
     private void placeShip(int size, char marker) {
         boolean placed = false;
@@ -40,21 +41,24 @@ public class BoardHandler {
     }
 
     private void initialiseGrid(char[] grid) {
-        for (int i = 0; i < grid.length; i++) {
-            grid[i] = '_';
-        }
+        Arrays.fill(grid, '_');
     }
 
     @Override
     public String toString() {
-        StringBuilder gridString = new StringBuilder("[");
-        for (int i = 0; i < SIZE; i++) {
-            gridString.append(grid[i]);
-            if (i < SIZE - 1) {
-                gridString.append(",");
+        StringBuilder gridString = new StringBuilder(" ");
+        int sizes = (int)Math.sqrt(SIZE);
+        for (int i = 0; i < Math.sqrt(SIZE); ++i) {
+            for (int j=0; j<Math.sqrt(SIZE); ++j){
+                if (j==0){
+                    gridString.append("[");
+                }
+                gridString.append(grid[4*i+j]);
+                gridString.append(" ");
+                gridString.append("]");
             }
+            gridString.append("\n");
         }
-        gridString.append("]");
         return gridString.toString();
     }
 
@@ -87,8 +91,6 @@ public class BoardHandler {
             case H -> this.target[index] = 'X';
             case M -> this.target[index] = 'O';
         }
-
-
     }
     public String getOpponentBoardToString() {
         String str = "";
