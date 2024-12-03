@@ -19,13 +19,15 @@ public class Server implements Callable<Integer> {
 
     protected int port;
     private ServerSocket serverSocket;
-    private final int THREAD_POOL_SIZE = 3;
 
 
     @Override
     public Integer call() throws IOException {
+        int THREAD_POOL_SIZE = 3;
         try(ServerSocket serverSocket = new ServerSocket(port);
             ExecutorService executorService = Executors.newFixedThreadPool(THREAD_POOL_SIZE);) {
+            System.out.println("Server started !");
+            System.out.println("Waiting for players to connect...");
             while (!serverSocket.isClosed()) {
                 Socket socket_p1 = serverSocket.accept();
                 Socket socket_p2 = serverSocket.accept();

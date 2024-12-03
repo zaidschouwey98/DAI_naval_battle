@@ -10,5 +10,5 @@ public class GridUtils {
     }
 
     // Tableau de chaînes associé aux états de la grille
-    public static final String[] gridStateStrings = {"~", "O", "X", "o"};
+    public static final char[] gridStateChar = {'~', 'O', 'X' , 'o'};
 }
