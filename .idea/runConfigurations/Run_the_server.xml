@@ -1,9 +1,10 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="Run the app" type="Application" factoryName="Application">
+  <configuration default="false" name="Run the server" type="Application" factoryName="Application">
     <option name="ALTERNATIVE_JRE_PATH" value="temurin-22 (WSL)" />
     <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="true" />
     <option name="MAIN_CLASS_NAME" value="ch.heigvd.dai.Main" />
     <module name="naval_battle" />
+    <option name="PROGRAM_PARAMETERS" value="server" />
     <method v="2">
       <option name="Make" enabled="true" />
     </method>
