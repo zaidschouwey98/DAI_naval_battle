@@ -6,46 +6,42 @@ The "Battleship" protocol is a communication protocol that allows two clients to
 
 ## Section 2 - Transport protocol
 
-The "Battleship" protocol is a text-based communication protocol used for playing a Battleship game on a 1D grid between two clients. This protocol employs both UDP and TCP transport protocols to manage different stages of communication:
-- **UDP** is used for broadcasting a match-making request from the server.
-- **TCP** is used for reliable, sequential data transmission during gameplay.
+The "Battleship" protocol is a text-based communication protocol used for playing a Battleship game on a 1D grid between two clients. This protocol employs TCP protocol. TCP ensures reliable, sequential data transmission during gameplay.
 
 Every message must be encoded in UTF-8 and delimited by a newline character (\n). The messages are treated as text messages.
 
 ### Game Setup and Matchmaking
-The client A that wants to start a Battleship game sends a message to the server.
+The server sets up the game for it to begin. If a client attempts to connect before the server initiates the game, the connection is rejected.
 
-The server accepts the request, and broadcasts a match-making request over UDP to find an opponent for the client A.
+Every client that wants to start a Battleship game sends a message to the server.
 
-Upon receiving the match-making broadcast, Client B responds to the server, indicating they want to join the game with client A.
+The server accepts the client's request.
 
-The server accepts the request, and initiates a TCP connection with both client A and client B.
-
-Once the two connections are established, the server generates two warship-filled 1D grids associated with each of the clients.
-
-The server then prompts Client A to send their first attack position, represented by a number between 0 and 9.
+Once the two connections are established, the server asks the two clients to fill their 1D grid associated.
 
 ### Gameplay
 One turn proceeds as follows:
 
 #### Client's attack
-The server prompts Client A to send an attack position.
+Once both clients have functional grids, the server starts the game and prompts the first connected client—let's call them Client A—to attack a cell, represented by a number between 1 and 16.
 
-The client A sends the server a number.
+The Client A sends a number to the server.
 
-The server checks if this number has already been sent by client A. 
-- If so, the server asks client A to send a different position.
-- If not, the server updates the grid of client B with client A's chosen position.
+The server checks if this number has already been sent by Client A.
+- If so, the server asks Client A to send a different position.
+- If not, the server updates the grid of Client B with Client A's chosen position.
 
 #### Server response
 The server checks if the chosen position is covered by a warship.
 
-The server replies accordingly : miss, hit, destroyed.
+The server responds accordingly : miss, hit.
+
+It then displays to Client A the current state of Client B's grid. 
 
 #### Switching turns
 The server then prompts Client B to send an attack position.
 
-Client B's turn proceeds similarly, with the server updating Client A's grid as appropriate and providing a result.
+Client B's turn proceeds similarly, with the server updating Client A's grid as needed and sending the result.
 
 ### Ending the game
 The game continues in turn-by-turn format until one of the clients targets and destroys every warship on the opponent's grid.
@@ -55,119 +51,56 @@ When a client destroys all warships on the opponent’s grid, the server sends a
 
 #### Rematch offer
 The server asks both clients if they would like to play a rematch:
-- If both of the clients accepts to rematch, the server generates new grids and starts a new game. 
+- If both clients agree to a rematch, the server generates new grids and starts a new game.
 - If at least one of the clients declines, the server closes the connection with both clients.
 
 ## Section 3 - Messages
 
-### Starting a Game
+### Game initialization
 
-The client initiates a game with the server.
+- `GAMEREADY`(Server): The server informs the client that the game is starting. _Example Output_: "Game is starting!"
 
-#### Request
+- `INIT_GRID`(Server): The server instructs the client to initialize the game grid. This is typically followed by a prompt for the client to arrange their ships.
 
-```text
-START 
-```
+- `INIT_GRID=<positions>`(Client): The client sends this command to inform the server of the initial placement of their boats.
+  Format: INIT_GRID=pos1 pos2 ... posN
+  Example: INIT_GRID=1 2 5
 
-#### Response
+### Gameplay
 
-- `WAITING`: the server is searching for an opponent.
-- `ERROR 1`: client A has already started a game.
+- `ATTACK`(Server): The server prompts the client to make an attack on a specific cell of the opponent's grid.
 
-### Matchmaking Broadcast
+- `ATTACK=<cell>`(Client) : The client sends this command to attack a specific cell on the opponent's board.
+  Format: ATTACK=cell
+  Example: ATTACK=5
 
-The server broadcasts a match-making message to find an opponent for client A.
-#### Message
-```text
-FIND_OPPONENT <client_A_id>
-```
-### Joining a game
-Client B responds to the server’s broadcast message to join a game with client A.
+- Result of the attack (Server):
+  - `HIT`: The server informs the client that their attack successfully hit an opponent's ship. _Example Output_: "HIT!"
+  - `MISS`: The server informs the client that their attack missed. _Example Output_: "Missed..."
+#### Updated boards
+- `URBOARD`(Server): The server sends the client an updated view of their own board. _Example Output_: "Your board:" (followed by the board layout).
 
-#### Request
-```text
-JOIN <client_A_id>
-```
-#### Server Response
-- `CONNECTED <client_A_id> <client_B_id>`: game connection is successfully established between client A and client B.
-- `ERROR 1`: client B has already started a game.
-### Game Setup
-Once both connections are established, the server sets up 1D grids and sends confirmation messages to both clients.
+- `OPPONENTBOARD`(Server): The server sends the client an updated view of the opponent's board. _Example Output_: "Opponent's board:" (followed by the board layout).
 
-#### Message to Both Clients
-```text
-GAME_READY
-```
-### Turn Notification
-The server informs each client when it’s their turn to play.
+- `WAIT`(Server): The server instructs the client to wait for the opponent's move. _Example Output_: "Waiting for opponent's move..."
 
-#### Message
-```text
-YOUR_TURN
-```
-### Position Guess (One turn)
-The client sends a position guess, represented by a number between 0 and 9, to the server.
+### Game conclusion
+- Game result (Server):
+  - `UWON`: The server informs the client that they have won the game. _Example Output_: "YOU WIN!"
+  - `ULOST`: The server informs the client that they have lost the game. _Example Output_: "YOU LOST!"
 
-#### Request
-```text
-ATTACK <position>
-```
+- Post-game options (Client):
+  - `REMATCH_OFFER`: The client sends this command to offer a rematch after the game has ended. Sent when the client types "Rematch."
+  - `QUIT`: The client sends this command to quit the game after the game has ended. Sent when the client types "Exit."
 
-#### Server response
+- Rematch response(Server):
+   - `REMATCH_DENY`: The server informs the client that the opponent has denied a rematch. _Example Output_: "Rematch denied!"
+   - `END`: The server informs the client that the game has ended and the connection will be closed.
 
-- `MISS`: client’s position did not hit a warship. 
-- `HIT`: client’s position hit an opponent’s warship.
-- `DESTROYED`: client’s position destroyed an opponent’s warship.
-- `ERROR <code> TRY_AGAIN`. The error codes are as follows:
-  - 1: position has already been guessed by the client.
-  - 2: position is out of bounds (not between 0 and 9)
-
-In case of an error, the server asks the client to try again, until a valid input is given.
-
-### Turn Notification 
-The server informs the other client when it’s their turn to play.
-
-#### Message
-```text
-YOUR_TURN
-```
-
-### Victory and Defeat
-The server notifies both clients when the game ends due to one client’s victory.
-
-#### Message to winning client
-```text
-VICTORY
-```
-#### Message to losing client
-```text
-DEFEAT
-```
-
-### Rematch offer
-After the game ends, the server asks both clients if they would like a rematch.
-
-#### Server message to clients
-```text
-REMATCH_OFFER
-```
-#### Client response
-- `REMATCH_ACCEPT`: the client accepts the rematch offer.
-- `REMATCH_DECLINE`: the client declines the rematch offer.
-
-### Rematch outcome
-The server informs each client about the outcome of the rematch offer.
-
-#### Messages
-- `REMATCH_START`: both clients accept to rematch. A new game session begins.
-- `REMATCH_DECLINED`: as least one of the client declines the rematch offer. The session ends.
-
-### Connection Close
-When the rematch is declined, the server informs each client and closes the connection.
-
-#### Messages
-- `DISCONNECT`: the connection is closed by the server.
+#### Error handling
+  - `ERROR`(Server): The server informs the client of an invalid action, such as attacking a previously targeted cell. _Example Output_: "You already attacked this cell!"
+  - Default (Unexpected Command)(Client): If the server sends an unrecognized message, the client should handle it gracefully. 
+_Example Output_: "Unexpected command from server..."
 
 ## Section 4 - Examples
 
@@ -177,5 +110,6 @@ When the rematch is declined, the server informs each client and closes the conn
 #### Client A enters twice the same position
 ![error](./images/DoubleAttack.svg)
 
-#### Client B tries to join with an active game session
+
+#### Client B attemps to join with an active game session
 ![error2](./images/B_playing.png)
