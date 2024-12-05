@@ -1,7 +1,7 @@
 package ch.heigvd.dai.commands;
 
 public class GridUtils {
-    // Enum pour représenter les états de la grille
+    // Enum to represent the states of a cell
     public static enum GridState {
         EMPTY_CELL,
         BOAT,
@@ -9,6 +9,11 @@ public class GridUtils {
         MISS
     }
 
-    // Tableau de chaînes associé aux états de la grille
-    public static final char[] gridStateChar = {'~', 'O', 'X' , 'o'};
+    // Array associated with the enum of the states
+    public static final char[] gridStateChar = {
+            '~', // EMPTY_CELL
+            'O', // BOAT
+            'X', // HIT
+            '*'  // MISS
+    };
 }
