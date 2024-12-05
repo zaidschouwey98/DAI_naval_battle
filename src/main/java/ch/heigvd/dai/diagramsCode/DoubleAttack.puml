@@ -8,6 +8,8 @@ participant "Client B" as CB
 
 S -> CA: GAMEREADY
 & S -> CB: GAMEREADY
+S -> CA: INIT_GRID
+& S -> CB: INIT_GRID
 CA -> S: INIT_GRID=1 2 5
 CB -> S: INIT_GRID=3 4 6
 
