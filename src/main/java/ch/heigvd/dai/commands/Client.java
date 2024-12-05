@@ -26,7 +26,7 @@ public class Client implements Callable<Integer> {
     private static final String END_LINE = "\r\n";
 
     /**
-     * Returns true / false if the cells entered by the user is on the board
+     * Returns true / false if the cells entered by the user is not on the board
      */
     private static boolean isNotOnBoard(String input) {
         try {

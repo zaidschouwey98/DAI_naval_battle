@@ -3,7 +3,8 @@ package ch.heigvd.dai.commands;
 import picocli.CommandLine;
 
 @CommandLine.Command(
-        description = "A small game to experiment with TCP.",
+        description = "Simulation of a online game of naval battle using TCP sockets.\n" +
+                      "Requires 1 server and 2 players min..",
         version = "1.0.0",
         subcommands = {
                 Client.class,
