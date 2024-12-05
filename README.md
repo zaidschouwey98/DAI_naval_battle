@@ -21,7 +21,10 @@ The server hosts the game, allowing players to connect.
 ```java -jar target/naval_battle-1.0-SNAPSHOT.jar server --port 6433```
 
 ### Output 
-```Server started on port:6433```
+```
+Server started !
+Waiting for players to connect...
+```
 
 ### Server
 The client connects to the server to play the game.
