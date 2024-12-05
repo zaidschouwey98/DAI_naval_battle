@@ -23,7 +23,7 @@ public class Server implements Callable<Integer> {
 
     @Override
     public Integer call() throws IOException {
-        int THREAD_POOL_SIZE = 3;
+        int THREAD_POOL_SIZE = 10; // Can run 10 games at the same time
         try(ServerSocket serverSocket = new ServerSocket(port);
             ExecutorService executorService = Executors.newFixedThreadPool(THREAD_POOL_SIZE);) {
             System.out.println("Server started !");

@@ -25,6 +25,9 @@ public class Client implements Callable<Integer> {
     private static final int NBR_BOATS = 3;
     private static final String END_LINE = "\r\n";
 
+    /**
+     * Returns true / false if the cells entered by the user is on the board
+     */
     private static boolean isNotOnBoard(String input) {
         try {
             int number = Integer.parseInt(input);
@@ -34,8 +37,12 @@ public class Client implements Callable<Integer> {
         }
     }
 
+    /**
+     * The main behavior of the client part for the game
+     */
     @Override
     public Integer call() {
+        // Trying to connect to the server
         try (Socket socket = new Socket(host, port);
              BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream(), StandardCharsets.UTF_8));
              BufferedWriter out = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream(), StandardCharsets.UTF_8));
@@ -43,6 +50,7 @@ public class Client implements Callable<Integer> {
 
             System.out.println("Waiting for the game to start...");
 
+            // Beginning of the game
             while (!socket.isClosed()) {
                 String command = in.readLine(); // Blocking until server responds
 
@@ -57,10 +65,14 @@ public class Client implements Callable<Integer> {
         } catch (IOException e) {
             System.err.println("Connection error: " + e.getMessage());
         }
+        // End of the game
         System.out.println("Bye Bye !");
         return 0;
     }
 
+    /**
+     * Decodes a command received by the server
+     */
     private void processCommand(String command, BufferedWriter out, Scanner scanner, Socket socket) throws IOException {
         String[] parsedCommand = command.split("=", 2);
         String action = parsedCommand[0];
@@ -116,15 +128,20 @@ public class Client implements Callable<Integer> {
             case "ERROR":
                 System.out.println("You already attacked this cell!");
                 break;
+
             case "REMATCH_DENY":
                 System.out.println("Rematch denied !");
                 break;
+
             default:
                 System.out.println("Unexpected command from server...");
                 break;
         }
     }
 
+    /**
+     * Makes the player choose 3 cells to place his boats
+     */
     private void handleInitGrid(BufferedWriter out, Scanner scanner) throws IOException {
         System.out.println("Place your " + NBR_BOATS + " boats [1 - 16]");
         String[] boats = new String[NBR_BOATS];
@@ -138,12 +155,18 @@ public class Client implements Callable<Integer> {
         System.out.println("You've placed your boats. Wait for opponent.");
     }
 
+    /**
+     * Makes the player choose a cell to attack
+     */
     private void handleAttack(BufferedWriter out, Scanner scanner) throws IOException {
         String move = getValidInput(scanner, "Enter the cell to attack:", null);
         out.write("ATTACK=" + move + END_LINE);
         out.flush();
     }
 
+    /**
+     * Asks the player if he wants to replay a game or not
+     */
     private void handleEndOfGame(BufferedWriter out, Scanner scanner) throws IOException {
         System.out.println("You can type 'Rematch' to ask for a rematch and 'Exit' to quit.");
         String input = scanner.nextLine();
@@ -161,6 +184,9 @@ public class Client implements Callable<Integer> {
 
     }
 
+    /**
+     * Makes the user enter a number then checks if its valid
+     */
     private String getValidInput(Scanner scanner, String prompt, String[] existing) {
         String input;
         while (true) {
@@ -182,36 +208,34 @@ public class Client implements Callable<Integer> {
         return input;
     }
 
+    /**
+     * displays a board
+     */
     private void displayBoard(String title, String payload) {
         System.out.println(title);
-        int size = (int) Math.sqrt(BoardHandler.SIZE); // Taille de la grille (par exemple, 4x4 pour SIZE = 16)
+        int size = (int) Math.sqrt(BoardHandler.SIZE); // The size of a line
 
-        // Ajouter les numéros de colonnes
-        String centerize = "      "; // Centrage
-        System.out.print(centerize + "   "); // Espace initial pour aligner les numéros de colonnes
+        String centerize = "      "; // To center the board
+        System.out.print(centerize + "    ");
         for (int col = 1; col <= size; col++) {
-            System.out.printf("%2d  ", col); // Largeur de 2 caractères pour les numéros
+            System.out.printf("%2d  ", col);
         }
         System.out.println();
 
-        // Générer les lignes avec les données du tableau
         for (int row = 0; row < size; row++) {
-            // Ligne de séparation
             System.out.print(centerize + "   ");
             for (int col = 0; col < size; col++) {
                 System.out.print("+---");
             }
             System.out.println("+");
 
-            // Affichage des données avec les numéros de lignes
-            System.out.printf(centerize + "%2d ", row + 1); // Numéro de ligne aligné
+            System.out.printf(centerize + "%2d ", row + 1);
             for (int col = 0; col < size; col++) {
                 System.out.printf("| %c ", payload.charAt(row * size + col));
             }
             System.out.println("|");
         }
 
-        // Dernière ligne de séparation
         System.out.print(centerize + "   ");
         for (int col = 0; col < size; col++) {
             System.out.print("+---");
@@ -219,8 +243,10 @@ public class Client implements Callable<Integer> {
         System.out.println("+");
     }
 
-
-
+    /**
+     * Called by getValidInputs :
+     * Checks if a value isn't already in a array
+     */
     private boolean contains(String[] array, String value) {
         for (String s : array) {
             if (value.equals(s)) {
