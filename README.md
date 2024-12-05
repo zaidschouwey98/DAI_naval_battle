@@ -26,7 +26,7 @@ Server started !
 Waiting for players to connect...
 ```
 
-### Server
+### Client
 The client connects to the server to play the game.
 
 ``` java -jar target/naval_battle-1.0-SNAPSHOT.jar client --host <SERVER_IP> --port <PORT>```
@@ -38,11 +38,56 @@ The client connects to the server to play the game.
 ### Output
 ```
 Waiting for the game to start...
-Game is starting ! // once 2 players are connected
 ```
+When another player connects, the game start.
+```bash
+Game is starting !
+```
+Then comes the boat placement phase.
+```
+-----------------------------------
+Place your 3 boats [1 - 16]
+Enter boat n°1:
+```
+When all the boat are placed from boths sides, the game starts.
+
+```
+You've placed your boats. Wait for opponent.
+-----------------------------------
+Your board:
+          1   2   3   4  
+         +---+---+---+---+
+       1 | O | O | O | ~ |
+         +---+---+---+---+
+       2 | ~ | ~ | ~ | ~ |
+         +---+---+---+---+
+       3 | ~ | ~ | ~ | ~ |
+         +---+---+---+---+
+       4 | ~ | ~ | ~ | ~ |
+         +---+---+---+---+
+-----------------------------------
+Enter the cell to attack:
+```
+
+
+- ' ~ ' : empty space
+- ' O ' : Boat
+- ' X ' : Hit 
+- ' * ' : Miss
+
+
+
+When all of a player's ships are sunk, the game stops and ask each player for a rematch.
+```
+YOU WIN!
+You can type 'Rematch' to ask for a rematch and 'Exit' to quit.
+```
+You can now write rematch to have a battle again against the same opponent or exit to leave.
+
 
 ## Build and Development
 ### 1. Clone the repository
+
 ```bash
 git clone https://github.com/zaidschouwey98/DAI_naval_battle.git
 cd DAI_naval_battle
