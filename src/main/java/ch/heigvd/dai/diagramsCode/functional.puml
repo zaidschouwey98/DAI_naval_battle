@@ -1,0 +1,59 @@
+@startuml
+!pragma teoz true
+participant "Client A" as CA
+participant "Server" as S
+participant "Client B" as CB
+
+== Game Initialization ==
+
+S -> CA: GAMEREADY
+& S -> CB: GAMEREADY
+CA -> S: INIT_GRID=1 2 5
+CB -> S: INIT_GRID=3 4 6
+
+== Gameplay ==
+S -> CA: URBOARD
+S -> CA: ATTACK
+CA -> S: ATTACK=3
+S -> CA: HIT
+& S -> CB: HIT
+S -> CA: OPPONENTBOARD
+& S -> CB: URBOARD
+S -> CA: WAIT
+& S -> CB: ATTACK
+CB -> S: ATTACK=6
+S -> CB: MISS
+S -> CB: OPPONENTBOARD
+S -> CB: WAIT
+note over CA, S : Client A proceeds to attack 4
+note over CB, S : Client B proceeds to attack 7
+S -> CA: ATTACK
+CA -> S: ATTACK=6
+S -> CA: HIT
+& S -> CB: HIT
+S -> CA: OPPONENTBOARD
+& S -> CB: URBOARD
+
+== Game Conclusion ==
+S -> CA: UWON
+& S -> CB: ULOST
+
+== Rematch proposition ==
+CA -> S: REMATCH_OFFER
+CB -> S: REMATCH_OFFER
+== Game Initialization ==
+S -> CA: GAMEREADY
+& S -> CB: GAMEREADY
+note over CA, CB: Client A loses this game, Client B wins.
+== Game Conclusion ==
+S -> CB: UWON
+& S -> CA: ULOST
+== Rematch proposition ==
+CB -> S: REMATCH_OFFER
+CA -> S: QUIT
+S -> CA: REMATCH_DENY
+& S -> CB: REMATCH_DENY
+S -> CA: END
+& S -> CB: END
+
+@enduml

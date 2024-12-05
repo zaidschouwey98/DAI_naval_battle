@@ -172,10 +172,10 @@ When the rematch is declined, the server informs each client and closes the conn
 ## Section 4 - Examples
 
 #### Functional example (no error printed by the server)
-![functional](./images/Functional.png)
+![functional](./images/functional.svg)
 
 #### Client A enters twice the same position
-![error](./images/Same_pos.png)
+![error](./images/DoubleAttack.svg)
 
 #### Client B tries to join with an active game session
 ![error2](./images/B_playing.png)
