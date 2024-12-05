@@ -101,10 +101,12 @@ public class Client implements Callable<Integer> {
 
             case "UWON":
                 System.out.println("YOU WIN!");
+                this.handleEndOfGame(out, scanner);
                 break;
 
             case "ULOST":
                 System.out.println("YOU LOST!");
+                this.handleEndOfGame(out, scanner);
                 break;
 
             case "END":
@@ -114,7 +116,9 @@ public class Client implements Callable<Integer> {
             case "ERROR":
                 System.out.println("You already attacked this cell!");
                 break;
-
+            case "REMATCH_DENY":
+                System.out.println("Rematch denied !");
+                break;
             default:
                 System.out.println("Unexpected command from server...");
                 break;
@@ -138,6 +142,23 @@ public class Client implements Callable<Integer> {
         String move = getValidInput(scanner, "Enter the cell to attack:", null);
         out.write("ATTACK=" + move + END_LINE);
         out.flush();
+    }
+
+    private void handleEndOfGame(BufferedWriter out, Scanner scanner) throws IOException {
+        System.out.println("You can type 'Rematch' to ask for a rematch and 'Exit' to quit.");
+        String input = scanner.nextLine();
+        while(!input.equalsIgnoreCase("rematch") && !input.equalsIgnoreCase("exit")) {
+            System.out.println("You can type 'Rematch' to ask for a rematch and 'Exit' to quit.");
+            input = scanner.nextLine();
+        }
+        if(input.equalsIgnoreCase("rematch")) {
+            out.write("REMATCH_OFFER" + END_LINE);
+            System.out.println("Waiting for oppenent...");
+        } else {
+            out.write("QUIT" + END_LINE);
+        }
+        out.flush();
+
     }
 
     private String getValidInput(Scanner scanner, String prompt, String[] existing) {

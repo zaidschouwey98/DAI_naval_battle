@@ -8,7 +8,7 @@ public class NavalBattle implements Runnable {
     public static final String END_OF_LINE = "\n";
     public static int id_game = 1;
     public static final int NBR_BOATS = 3;
-
+    public boolean rematch = false;
     private final int thisIdGame;
     private final Socket socketP1, socketP2;
 
@@ -26,24 +26,33 @@ public class NavalBattle implements Runnable {
                 BufferedReader in1  = new BufferedReader(new InputStreamReader(socketP1.getInputStream(), StandardCharsets.UTF_8));
                 BufferedReader in2  = new BufferedReader(new InputStreamReader(socketP2.getInputStream(), StandardCharsets.UTF_8))
         ) {
-            broadcastMessage(out1, out2, "GAMEREADY");
+            do {
+                broadcastMessage(out1, out2, "GAMEREADY");
 
-            // Initialisation des grilles
-            BoardHandler boardP1 = new BoardHandler();
-            BoardHandler boardP2 = new BoardHandler();
-            broadcastMessage(out1, out2, "INIT_GRID");
-            boardP1.placeShip(in1.readLine().split("=")[1]);
-            boardP2.placeShip(in2.readLine().split("=")[1]);
-            sendMessage(out1, "URBOARD=" + boardP1.getUserBoardToString());
-            sendMessage(out2, "URBOARD=" + boardP2.getUserBoardToString());
+                // Initialisation des grilles
+                BoardHandler boardP1 = new BoardHandler();
+                BoardHandler boardP2 = new BoardHandler();
+                broadcastMessage(out1, out2, "INIT_GRID");
+                boardP1.placeShip(in1.readLine().split("=")[1]);
+                boardP2.placeShip(in2.readLine().split("=")[1]);
+                sendMessage(out1, "URBOARD=" + boardP1.getUserBoardToString());
+                sendMessage(out2, "URBOARD=" + boardP2.getUserBoardToString());
 
-            // Début de la partie
-            System.out.println("[GameSession] Game n°" + thisIdGame + " started!");
-            playGame(out1, out2, in1, in2, boardP1, boardP2);
+                // Début de la partie
+                System.out.println("[GameSession] Game n°" + thisIdGame + " started!");
+                playGame(out1, out2, in1, in2, boardP1, boardP2);
 
-            // Fin de la partie
-            broadcastMessage(out1, out2, "END");
-            System.out.println("[GameSession] Game n°" + thisIdGame + " ended.");
+
+                if (in2.readLine().equals("REMATCH_OFFER") && in1.readLine().equals("REMATCH_OFFER")) {
+                    rematch = true;
+                } else {
+                    rematch = false;
+                    broadcastMessage(out1, out2, "REMATCH_DENY");
+                    broadcastMessage(out1, out2, "END");
+                    System.out.println("[GameSession] Game n°" + thisIdGame + " ended.");
+                }
+
+            } while(rematch);
         } catch (IOException e) {
             System.out.println("[GameSession] Error: " + e.getMessage());
         } finally {
