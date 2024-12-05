@@ -105,10 +105,11 @@ _Example Output_: "Unexpected command from server..."
 ## Section 4 - Examples
 
 #### Functional example (no error printed by the server)
-![functional](./images/Functional.png)
+![functional](./images/functional.svg)
 
-#### Client B enters the same position twice
-![error](./images/Same_pos.png)
+#### Client A enters twice the same position
+![error](./images/DoubleAttack.svg)
+
 
 #### Client B attemps to join with an active game session
 ![error2](./images/B_playing.png)
