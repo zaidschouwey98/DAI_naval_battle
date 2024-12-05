@@ -36,7 +36,10 @@ The client connects to the server to play the game.
 ```java -jar target/naval_battle-1.0-SNAPSHOT.jar client --host 127.0.0.1 --port 6433```
 
 ### Output
-```Your board : BOARD=[_,_,_,_,A,A,_,B,B,B]```
+```
+Waiting for the game to start...
+Game is starting ! // once 2 players are connected
+```
 
 ## Build and Development
 ### 1. Clone the repository
@@ -59,7 +62,10 @@ To containerize the application, run the following command:
 ### Run with Docker
 #### Server
 ```docker run -t naval_battle server```
+
 #### Client
 ```docker run -t naval_battle client --host=<HOSTIP>```
+
 Exemple for localhost :
+
 ```docker run -t naval_battle client --host=127.0.0.1```
