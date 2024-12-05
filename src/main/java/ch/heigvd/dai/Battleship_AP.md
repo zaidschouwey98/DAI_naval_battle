@@ -19,24 +19,30 @@ The server accepts the client's request.
 
 Once the two connections are established, the server asks the two clients to fill their 1D grid associated.
 
+If a client enters twice the same position, the server prints an error and asks for another position.
+
+Once both clients have functional grids, the server starts the game.
+
 ### Gameplay
 One turn proceeds as follows:
 
 #### Client's attack
-Once both clients have functional grids, the server starts the game and prompts the first connected client—let's call them Client A—to attack a cell, represented by a number between 1 and 16.
+The server displays to the first connected client —let's call them Client A— their current grid.
+
+The server prompts Client A to attack a cell, represented by a number between 1 and 16.
 
 The Client A sends a number to the server.
 
 The server checks if this number has already been sent by Client A.
 - If so, the server asks Client A to send a different position.
-- If not, the server updates the grid of Client B with Client A's chosen position.
+- If not, the server updates the grid of the other client -let's call them Client B- with Client A's chosen position.
 
 #### Server response
 The server checks if the chosen position is covered by a warship.
 
 The server responds accordingly : miss, hit.
 
-It then displays to Client A the current state of Client B's grid. 
+It then displays to Client A the current state of Client B's grid, and to Client B the current state of their own grid. 
 
 #### Switching turns
 The server then prompts Client B to send an attack position.
@@ -51,7 +57,7 @@ When a client destroys all warships on the opponent’s grid, the server sends a
 
 #### Rematch offer
 The server asks both clients if they would like to play a rematch:
-- If both clients agree to a rematch, the server generates new grids and starts a new game.
+- If both clients agree to a rematch, the server starts a new game.
 - If at least one of the clients declines, the server closes the connection with both clients.
 
 ## Section 3 - Messages
@@ -67,22 +73,22 @@ The server asks both clients if they would like to play a rematch:
   Example: INIT_GRID=1 2 5
 
 ### Gameplay
-
+- `URBOARD`(Server): The server sends the client an updated view of their own board. _Example Output_: "Your board:" (followed by the board layout).
 - `ATTACK`(Server): The server prompts the client to make an attack on a specific cell of the opponent's grid.
-
 - `ATTACK=<cell>`(Client) : The client sends this command to attack a specific cell on the opponent's board.
   Format: ATTACK=cell
   Example: ATTACK=5
 
 - Result of the attack (Server):
-  - `HIT`: The server informs the client that their attack successfully hit an opponent's ship. _Example Output_: "HIT!"
-  - `MISS`: The server informs the client that their attack missed. _Example Output_: "Missed..."
-#### Updated boards
-- `URBOARD`(Server): The server sends the client an updated view of their own board. _Example Output_: "Your board:" (followed by the board layout).
+  - `HIT`: The server informs both clients that Client A's attack successfully hit an opponent's ship. _Example Output_: "HIT!"
+  - `MISS`: The server informs both clients that Client A's attack missed. _Example Output_: "Missed..."
+#### Boards display
+The two following commands are sent at the same time, the first to Client A, the second to Client B
+- `OPPONENTBOARD`(Server): The server sends Client A an updated view of the opponent's board. _Example Output_: "Opponent's board:" (followed by the board layout).
 
-- `OPPONENTBOARD`(Server): The server sends the client an updated view of the opponent's board. _Example Output_: "Opponent's board:" (followed by the board layout).
+- `URBOARD`(Server): The server sends Client B an updated view of their own board. _Example Output_: "Your board:" (followed by the board layout).
 
-- `WAIT`(Server): The server instructs the client to wait for the opponent's move. _Example Output_: "Waiting for opponent's move..."
+- `WAIT`(Server): The server instructs Client A to wait for the opponent's move. _Example Output_: "Waiting for opponent's move..."
 
 ### Game conclusion
 - Game result (Server):
@@ -94,8 +100,8 @@ The server asks both clients if they would like to play a rematch:
   - `QUIT`: The client sends this command to quit the game after the game has ended. Sent when the client types "Exit."
 
 - Rematch response(Server):
-   - `REMATCH_DENY`: The server informs the client that the opponent has denied a rematch. _Example Output_: "Rematch denied!"
-   - `END`: The server informs the client that the game has ended and the connection will be closed.
+   - `REMATCH_DENY`: The server informs both clients that the rematch has been denied. _Example Output_: "Rematch denied!"
+   - `END`: The server informs both clients that the game has ended and the connection will be closed.
 
 #### Error handling
   - `ERROR`(Server): The server informs the client of an invalid action, such as attacking a previously targeted cell. _Example Output_: "You already attacked this cell!"
@@ -107,9 +113,5 @@ _Example Output_: "Unexpected command from server..."
 #### Functional example (no error printed by the server)
 ![functional](./images/functional.svg)
 
-#### Client A enters twice the same position
+#### Client A attacks twice the same position
 ![error](./images/DoubleAttack.svg)
-
-
-#### Client B attemps to join with an active game session
-![error2](./images/B_playing.png)
